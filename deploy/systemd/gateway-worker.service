@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenLimits VPS Gateway Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/openlimits-vps
+EnvironmentFile=/opt/openlimits-vps/.env
+ExecStart=/opt/openlimits-vps/.venv/bin/python -m src.workers.scheduler
+Restart=always
+RestartSec=5
+User=gateway
+Group=gateway
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,37 @@
+version: 1
+routes:
+  - code: default-api
+    public_path_prefix: /api/
+    upstream_path_prefix: /api/
+    methods: [GET, POST, PUT, PATCH, DELETE]
+    policy_code: default
+    enabled: true
+    timeout_ms: 30000
+    retry:
+      enabled: true
+      attempts: 2
+      retryable_methods: [GET, HEAD]
+      retry_on_statuses: [502, 503, 504]
+      base_delay_ms: 100
+      max_delay_ms: 1000
+      jitter_ms: 100
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 5
+      recovery_timeout_seconds: 30
+      half_open_max_requests: 2
+    bulkhead:
+      max_concurrency: 100
+    forwarding:
+      request_headers:
+        - accept
+        - accept-encoding
+        - content-type
+        - content-length
+        - user-agent
+      response_headers:
+        - content-type
+        - content-length
+        - cache-control
+        - etag
+

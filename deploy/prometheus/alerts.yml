@@ -1,0 +1,18 @@
+groups:
+  - name: gateway
+    rules:
+      - alert: GatewayHighErrorRate
+        expr: sum(rate(gateway_requests_total{status_family="5xx"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Gateway is returning a high rate of 5xx responses.
+      - alert: GatewayUpstreamTimeouts
+        expr: sum(rate(gateway_upstream_timeouts_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Upstream timeouts are elevated.
+

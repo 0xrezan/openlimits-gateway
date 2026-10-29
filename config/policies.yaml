@@ -1,0 +1,30 @@
+version: 1
+defaults:
+  require_authentication: true
+  strip_forwarding_headers: true
+  remove_user_authorization: true
+  allow_anonymous: false
+  body_limit_bytes: 10485760
+  allowed_methods: [GET, POST, PUT, PATCH, DELETE]
+policies:
+  - code: default
+    enabled: true
+    allowed_methods: [GET, POST, PUT, PATCH, DELETE]
+    allow_ip_forwarding: false
+    header_allowlist:
+      - accept
+      - accept-encoding
+      - content-type
+      - content-length
+      - user-agent
+    rate_limit:
+      requests: 120
+      window_seconds: 60
+    quotas:
+      - name: daily
+        requests: 5000
+        window_seconds: 86400
+    retries:
+      enabled: true
+      unsafe_methods_allowed: false
+

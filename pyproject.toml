@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openlimits-vps-gateway"
+version = "0.1.0"
+description = "Privacy-preserving multi-tenant API relay/gateway for VPS deployments."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "REZA", email = "244307759+0xrezan@users.noreply.github.com" }]
+dependencies = [
+  "fastapi==0.135.1",
+  "uvicorn[standard]==0.41.0",
+  "httpx==0.28.1",
+  "tenacity==9.1.4",
+  "pydantic==2.12.5",
+  "pydantic-settings==2.13.1",
+  "PyYAML==6.0.3",
+  "SQLAlchemy[asyncio]==2.0.48",
+  "alembic==1.18.4",
+  "asyncpg==0.31.0",
+  "redis[hiredis]==7.3.0",
+  "limits==5.8.0",
+  "argon2-cffi==25.1.0",
+  "structlog==25.5.0",
+  "prometheus-client==0.24.1",
+  "opentelemetry-api==1.40.0",
+  "opentelemetry-sdk==1.40.0",
+  "opentelemetry-instrumentation-fastapi==0.61b0",
+  "opentelemetry-instrumentation-httpx==0.61b0",
+  "APScheduler==3.11.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.4.2",
+  "pytest-asyncio==1.2.0",
+  "respx==0.22.0",
+  "mypy==1.18.2",
+  "ruff==0.14.0",
+  "types-PyYAML==6.0.12.20250915",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+  "ASYNC",
+  "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+pretty = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+plugins = []
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["src/tests"]
