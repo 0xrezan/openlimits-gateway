@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from ipaddress import ip_network
 from pathlib import Path
-from typing import Any, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import Field, SecretStr, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -40,7 +40,10 @@ class Settings(BaseSettings):
     admin_api_enabled: bool = False
     admin_api_token_hash: str | None = None
     admin_api_bind: str = "127.0.0.1"
-    admin_api_ip_allowlist: list[str] = Field(default_factory=lambda: ["127.0.0.1/32"])
+    # NoDecode: the env value is a comma-separated list (see _split_allowlist), not JSON.
+    admin_api_ip_allowlist: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["127.0.0.1/32"]
+    )
 
     database_url: str
     redis_url: str

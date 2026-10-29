@@ -33,3 +33,11 @@ def test_admin_allowlist_rejects_invalid_cidr() -> None:
                 "admin_api_ip_allowlist": ["not-a-network"],
             }
         )
+
+
+def test_admin_allowlist_reads_comma_separated_env(monkeypatch) -> None:
+    monkeypatch.setenv("GATEWAY_ADMIN_API_IP_ALLOWLIST", "127.0.0.1/32, 10.0.0.5")
+
+    settings = Settings(_env_file=None, **_base_settings_payload())
+
+    assert settings.admin_api_ip_allowlist == ["127.0.0.1/32", "10.0.0.5/32"]

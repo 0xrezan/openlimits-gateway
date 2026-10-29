@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
 
 from src.core.enums import AuditActorType, AuditEventType
 from src.core.exceptions import GatewayError
@@ -56,26 +58,45 @@ async def _emit_error_side_effects(request: Request, exc: GatewayError) -> None:
         logger.exception("audit_side_effect_failed")
 
 
+async def gateway_error_response(request: Request, exc: GatewayError) -> JSONResponse:
+    request_context = getattr(request.state, "request_context", None)
+    await _emit_error_side_effects(request, exc)
+    logger.warning(
+        "gateway_error",
+        code=exc.code,
+        message=exc.message,
+        request_id=request_context.request_id if request_context else None,
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": exc.code,
+            "message": exc.message,
+            "request_id": request_context.request_id if request_context else None,
+        },
+        headers=exc.headers,
+    )
+
+
+class GatewayErrorMiddleware(BaseHTTPMiddleware):
+    """Map GatewayError raised by the middleware stack to its HTTP status.
+
+    FastAPI exception handlers only see errors raised inside routing. Auth, rate
+    limiting, policy, and body limits run as middleware, so without this their
+    errors would surface as 500 instead of 401/403/413/429.
+    """
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        try:
+            return await call_next(request)
+        except GatewayError as exc:
+            return await gateway_error_response(request, exc)
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(GatewayError)
     async def handle_gateway_error(request: Request, exc: GatewayError) -> JSONResponse:
-        request_context = getattr(request.state, "request_context", None)
-        await _emit_error_side_effects(request, exc)
-        logger.warning(
-            "gateway_error",
-            code=exc.code,
-            message=exc.message,
-            request_id=request_context.request_id if request_context else None,
-        )
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "code": exc.code,
-                "message": exc.message,
-                "request_id": request_context.request_id if request_context else None,
-            },
-            headers=exc.headers,
-        )
+        return await gateway_error_response(request, exc)
 
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:

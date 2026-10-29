@@ -11,7 +11,7 @@ from src.middleware.access_log import AccessLogMiddleware
 from src.middleware.auth import AuthMiddleware
 from src.middleware.body_limits import BodyLimitsMiddleware
 from src.middleware.concurrency_guard import ConcurrencyGuardMiddleware
-from src.middleware.error_mapper import register_exception_handlers
+from src.middleware.error_mapper import GatewayErrorMiddleware, register_exception_handlers
 from src.middleware.header_sanitizer import HeaderSanitizerMiddleware
 from src.middleware.metrics import MetricsMiddleware
 from src.middleware.policy import PolicyMiddleware
@@ -44,6 +44,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.add_middleware(BodyLimitsMiddleware)
     app.add_middleware(ConcurrencyGuardMiddleware)
     app.add_middleware(AuthMiddleware)
+    app.add_middleware(GatewayErrorMiddleware)
     app.add_middleware(AccessLogMiddleware)
     app.add_middleware(RequestIDMiddleware)
 
